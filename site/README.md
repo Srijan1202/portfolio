@@ -61,4 +61,4 @@ Every dynamic light makes every lit material's shader bigger. On Windows/ANGLE a
 - **Camera rail:** driven by native window scroll instead of drei `ScrollControls`, so the HTML content stays in normal document flow (accessibility, anchors, find-in-page). Damping uses `THREE.MathUtils.damp` instead of GSAP.
 - **2D panel transitions:** CSS instead of Framer Motion (one less dependency).
 - **No-WebGL visitors on `/`:** they get the same HTML page without the canvas, rather than a redirect to `/lite`. The content is identical and there's no layout jump. `/lite` still exists as a standalone 2D page.
-- **Detail pages:** no small 3D header model yet.
+- **Detail-page header model** (`components/ProjectModel.tsx` → `three/StationPreview.tsx`): reuses the station component on a transparent canvas, desktop and tablet only. It follows the same on/off rules as the home scene (`lib/webgl.ts`), pauses when scrolled out of view, and switches off if frames average over 70 ms.

@@ -15,6 +15,12 @@ import {
 import { Todo } from "@/components/OpenItems";
 
 const components: MDXComponents = {
+  // Wide tables scroll sideways on phones instead of widening the page.
+  table: (props) => (
+    <div className="table-scroll">
+      <table {...props} />
+    </div>
+  ),
   Callout,
   EmotionPipeline,
   FitosArchitecture,

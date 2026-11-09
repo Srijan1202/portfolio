@@ -2,9 +2,17 @@ import Link from "next/link";
 import type { Project } from "@/content/projects";
 import { OpenItems } from "@/components/OpenItems";
 
-export function StatGrid({ stats, accent }: { stats: Project["stats"]; accent: string }) {
+export function StatGrid({
+  stats,
+  accent,
+  className = "",
+}: {
+  stats: Project["stats"];
+  accent: string;
+  className?: string;
+}) {
   return (
-    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <dl className={`grid grid-cols-1 gap-3 sm:grid-cols-3 ${className}`}>
       {stats.map((s) => (
         <div key={s.label} className="rounded-lg border border-line bg-white/[0.02] p-3">
           <dt className="sr-only">{s.label}</dt>
@@ -48,22 +56,28 @@ export function ProjectMeta({ project }: { project: Project }) {
 /**
  * The project card used on the home page (over the 3D scene) and on /lite.
  * `index` is the station number (1-4).
+ * `compact`: on phones, while the 3D scene runs, the card trims to the
+ * essentials (one stat, no tags or external links) so the model stays visible
+ * above it. The case study has everything.
  */
 export function ProjectCard({
   project,
   index,
   children,
   headingLevel = "h3",
+  compact = false,
 }: {
   project: Project;
   index: number;
   children?: React.ReactNode;
   headingLevel?: "h2" | "h3";
+  compact?: boolean;
 }) {
   const H = headingLevel;
+  const c = (cls: string) => (compact ? cls : "");
   return (
     <article
-      className="glass rounded-2xl p-5 shadow-2xl shadow-black/40 sm:p-6"
+      className={`glass rounded-2xl p-5 shadow-2xl shadow-black/40 sm:p-6 ${c("scene-mobile:p-4")}`}
       style={{ ["--accent" as string]: project.accent }}
       aria-labelledby={`card-${project.slug}`}
     >
@@ -76,11 +90,15 @@ export function ProjectCard({
       <div className="mt-2">
         <ProjectMeta project={project} />
       </div>
-      <p className="mt-3 text-[15px] leading-relaxed text-dim">{project.oneLiner}</p>
+      <p className={`mt-3 text-[15px] leading-relaxed text-dim ${c("scene-mobile:line-clamp-3")}`}>{project.oneLiner}</p>
       <div className="mt-4">
-        <StatGrid stats={project.stats.slice(0, 3)} accent={project.accent} />
+        <StatGrid
+          stats={project.stats.slice(0, 3)}
+          accent={project.accent}
+          className={c("scene-mobile:[&>*:nth-child(n+2)]:hidden")}
+        />
       </div>
-      <div className="mt-4">
+      <div className={`mt-4 ${c("scene-mobile:hidden")}`}>
         <TagList tags={project.tags} />
       </div>
       {children}
@@ -96,7 +114,7 @@ export function ProjectCard({
           <a
             key={l.href}
             href={l.href}
-            className="rounded-lg border border-line-strong px-3.5 py-2 text-sm text-text transition-colors hover:border-[var(--accent)]"
+            className={`rounded-lg border border-line-strong px-3.5 py-2 text-sm text-text transition-colors hover:border-[var(--accent)] ${c("scene-mobile:hidden")}`}
           >
             {l.label} <span aria-hidden>↗</span>
           </a>

@@ -39,7 +39,14 @@ function Hero({ mode }: { mode: Mode }) {
           : "relative pt-16 pb-10 sm:pt-24"
       }
     >
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      {mode === "full" && (
+        // Phones: fade the scene out behind the hero text so it stays legible.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-[85%] bg-linear-to-t from-bg via-bg/85 to-transparent scene-mobile:block"
+        />
+      )}
+      <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className={mode === "full" ? "pointer-events-auto max-w-xl" : "max-w-2xl"}>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-lamp">Portfolio · srijansri.tech</p>
           <h1
@@ -135,11 +142,13 @@ function Projects({ mode }: { mode: Mode }) {
           key={p.slug}
           id={`project-${p.slug}`}
           data-rail={i + 1}
-          className="pointer-events-none flex min-h-[115svh] items-center py-20"
+          // With the scene on, each project gets a screen of its own. On phones the
+          // card sits low so the model shows above it (the portrait camera frames it high).
+          className="pointer-events-none flex items-center py-20 scene:min-h-[115svh] scene-mobile:items-end scene-mobile:pt-[40svh] scene-mobile:pb-[6svh]"
         >
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
             <div className="pointer-events-auto w-full max-w-[560px] lg:w-[46%]">
-              <ProjectCard project={p} index={i + 1}>
+              <ProjectCard project={p} index={i + 1} compact>
                 <StationControls slug={p.slug} />
               </ProjectCard>
             </div>
@@ -298,7 +307,7 @@ function Contact({ mode }: { mode: Mode }) {
       id="contact"
       data-rail={mode === "full" ? 6 : undefined}
       aria-labelledby="contact-title"
-      className={mode === "full" ? "pointer-events-none flex min-h-[100svh] scroll-mt-14 items-center py-20" : "scroll-mt-14 py-16"}
+      className={mode === "full" ? "pointer-events-none flex scroll-mt-14 items-center py-20 scene:min-h-[100svh]" : "scroll-mt-14 py-16"}
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="glass pointer-events-auto w-full max-w-[520px] rounded-2xl p-6 sm:p-8">

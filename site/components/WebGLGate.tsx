@@ -4,65 +4,24 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSite, type Quality } from "@/lib/store";
+import { hasWebGL, isLowEnd, isSmallScreen, readPref, sessionSlowFlag as sessionFlag, writePref } from "@/lib/webgl";
 
 // The 3D bundle loads only on the client, after the HTML has painted.
 const Workbench = dynamic(() => import("@/components/three/Workbench"), { ssr: false });
-
-const PREF_KEY = "srijansri:3d";
-const SLOW_KEY = "srijansri:3d-slow";
 
 type Verdict =
   | { mode: "pending" }
   | { mode: "off"; reason: "no-webgl" | "low-end" | "user" | "slow" }
   | { mode: "on"; quality: Quality };
 
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    const gl = (c.getContext("webgl2") || c.getContext("webgl")) as WebGLRenderingContext | null;
-    // Release the probe context right away; browsers cap live contexts.
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    return !!gl;
-  } catch {
-    return false;
-  }
-}
-
-function readPref(): string | null {
-  try {
-    return localStorage.getItem(PREF_KEY);
-  } catch {
-    return null;
-  }
-}
-function writePref(v: "on" | "off") {
-  try {
-    localStorage.setItem(PREF_KEY, v);
-  } catch {
-    /* storage unavailable: preference lasts this visit only */
-  }
-}
-
-function sessionFlag(set?: boolean): boolean {
-  try {
-    if (set === true) sessionStorage.setItem(SLOW_KEY, "1");
-    if (set === false) sessionStorage.removeItem(SLOW_KEY);
-    return sessionStorage.getItem(SLOW_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
 function decide(): Verdict {
   const pref = readPref();
   if (pref === "off") return { mode: "off", reason: "user" };
   if (pref !== "on" && sessionFlag()) return { mode: "off", reason: "slow" };
   if (!hasWebGL()) return { mode: "off", reason: "no-webgl" };
-  const nav = navigator as Navigator & { deviceMemory?: number };
-  const lowEnd = (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) || (nav.hardwareConcurrency ?? 8) <= 2;
+  const lowEnd = isLowEnd();
   if (lowEnd && pref !== "on") return { mode: "off", reason: "low-end" };
-  const small = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
-  return { mode: "on", quality: small || lowEnd ? "low" : "high" };
+  return { mode: "on", quality: isSmallScreen() || lowEnd ? "low" : "high" };
 }
 
 /**
@@ -109,8 +68,7 @@ export function WebGLGate() {
       forcedRef.current = true;
       sessionFlag(false);
       set({ sceneTooSlow: false });
-      const small = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
-      setVerdict(hasWebGL() ? { mode: "on", quality: small ? "low" : "high" } : { mode: "off", reason: "no-webgl" });
+      setVerdict(hasWebGL() ? { mode: "on", quality: isSmallScreen() ? "low" : "high" } : { mode: "off", reason: "no-webgl" });
     }
   };
 
@@ -118,7 +76,7 @@ export function WebGLGate() {
     <>
       {verdict.mode === "on" && <Workbench />}
       {verdict.mode !== "pending" && (
-        <div className="fixed bottom-4 right-4 z-30 flex items-center gap-2 text-xs">
+        <div className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-2 text-xs">
           {verdict.mode === "off" && verdict.reason === "no-webgl" && (
             <span className="glass rounded-md px-2.5 py-1.5 text-dim">
               3D needs WebGL. <Link href="/lite" className="underline">2D version</Link>

@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/*
+ * Layout that only applies while the 3D scene is running. The workbench sets
+ * <html data-scene="on"> when it mounts and removes it when it stops, so with
+ * 3D off (no WebGL, turned off, too slow) the page falls back to plain flow.
+ *   scene:          any width
+ *   scene-mobile:   phones only (below the sm breakpoint)
+ */
+@custom-variant scene {
+  html[data-scene="on"] & {
+    @slot;
+  }
+}
+@custom-variant scene-mobile {
+  @media (width < 40rem) {
+    html[data-scene="on"] & {
+      @slot;
+    }
+  }
+}
+
 /* The site is intentionally dark: a desk at night under one warm lamp. */
 :root {
   color-scheme: dark;
@@ -170,4 +190,25 @@ body {
 .prose-site th {
   color: var(--text);
   font-weight: 600;
+}
+.prose-site .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.prose-site .table-scroll table {
+  min-width: 32rem;
+}
+@media (width < 40rem) {
+  .prose-site {
+    font-size: 1rem;
+  }
+  .prose-site h2 {
+    font-size: 1.4rem;
+    margin-top: 2em;
+  }
+  .prose-site th,
+  .prose-site td {
+    padding: 0.5em 0.6em;
+    font-size: 0.9rem;
+  }
 }

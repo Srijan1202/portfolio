@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { adjacentProjects, getProject, projects } from "@/content/projects";
 import { ProjectMeta, StatGrid, TagList } from "@/components/ProjectCard";
 import { OpenItems } from "@/components/OpenItems";
+import { ProjectModel } from "@/components/ProjectModel";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -48,16 +49,21 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         </nav>
 
         <header className="mt-8">
-          <p className="font-mono text-xs uppercase tracking-[0.18em]" style={{ color: project.accent }}>
-            Station {String(index).padStart(2, "0")}
-          </p>
-          <h1 className="mt-2 font-display text-4xl font-bold leading-[1.08] tracking-tight text-text sm:text-5xl">
-            {project.title}
-          </h1>
-          <div className="mt-4">
-            <ProjectMeta project={project} />
+          <div className="md:grid md:grid-cols-[1fr_210px] md:items-center md:gap-6">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.18em]" style={{ color: project.accent }}>
+                Station {String(index).padStart(2, "0")}
+              </p>
+              <h1 className="mt-2 font-display text-[1.9rem] font-bold leading-[1.1] tracking-tight text-text sm:text-5xl sm:leading-[1.08]">
+                {project.title}
+              </h1>
+              <div className="mt-4">
+                <ProjectMeta project={project} />
+              </div>
+              {project.context && <p className="mt-2 text-sm text-faint">{project.context}</p>}
+            </div>
+            <ProjectModel slug={project.slug} accent={project.accent} />
           </div>
-          {project.context && <p className="mt-2 text-sm text-faint">{project.context}</p>}
           <p className="mt-5 text-lg leading-relaxed text-dim">{project.oneLiner}</p>
 
           <div className="mt-6">

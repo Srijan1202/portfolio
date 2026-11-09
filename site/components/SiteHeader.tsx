@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { profile } from "@/content/site";
+import { MobileNav } from "@/components/MobileNav";
 
 const nav = [
   { href: "/#projects", label: "Projects" },
@@ -25,9 +26,10 @@ export function SiteHeader() {
               {n.label}
             </Link>
           ))}
+          <MobileNav items={nav} />
           <a
             href={profile.resume}
-            className="ml-1 rounded-md border border-line-strong px-3 py-1.5 font-medium text-text transition-colors hover:border-lamp hover:text-lamp"
+            className="ml-1 flex h-9 items-center rounded-md border border-line-strong px-3 font-medium text-text transition-colors hover:border-lamp hover:text-lamp sm:h-auto sm:py-1.5"
           >
             Resume
           </a>

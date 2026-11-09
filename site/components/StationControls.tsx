@@ -1,20 +1,38 @@
 "use client";
 
+import { useId, useState } from "react";
 import { useSite, type FitosFeature, type JobOrder, type SensorId } from "@/lib/store";
 import { fusionConfidence, fusionWeights, sensorLabels } from "@/lib/sim";
 
 /**
  * HTML controls for each station's interaction. They drive the 3D scene via
  * the shared store, and only appear while the scene is running.
+ * On phones they start collapsed so the card leaves room to see the model.
  */
 function Shell({ title, children, note }: { title: string; children: React.ReactNode; note?: string }) {
   const active = useSite((s) => s.sceneActive);
+  const [open, setOpen] = useState(false);
+  const id = useId();
   if (!active) return null;
   return (
-    <section className="mt-5 rounded-xl border border-line bg-black/20 p-4" aria-label={title}>
-      <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-faint">{title}</p>
-      {children}
-      {note && <p className="mt-3 text-xs leading-relaxed text-faint">{note}</p>}
+    <section className="mt-5 rounded-xl border border-line bg-black/20 p-4 max-sm:p-3" aria-label={title}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 text-left font-mono text-[11px] uppercase tracking-[0.16em] text-faint sm:hidden"
+      >
+        Try it on the model
+        <span aria-hidden className={`transition-transform ${open ? "rotate-180" : ""}`}>
+          ▾
+        </span>
+      </button>
+      <div id={id} className={open ? "max-sm:mt-3" : "max-sm:hidden"}>
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-faint max-sm:hidden">{title}</p>
+        {children}
+        {note && <p className="mt-3 text-xs leading-relaxed text-faint">{note}</p>}
+      </div>
     </section>
   );
 }

@@ -9,17 +9,7 @@ import { projects } from "@/content/projects";
 import { useSite } from "@/lib/store";
 import { CameraRail } from "./CameraRail";
 import { ContactTerminal, DeskSurface, HeroText, Lamp, StationLabel } from "./Desk";
-import { PhoneStation } from "./stations/Phone";
-import { RaspberryPiStation } from "./stations/RaspberryPi";
-import { Esp32Station } from "./stations/Esp32";
-import { L1L2StackStation } from "./stations/L1L2Stack";
-
-const STATIONS = {
-  phone: PhoneStation,
-  "raspberry-pi": RaspberryPiStation,
-  esp32: Esp32Station,
-  "l1-l2-stack": L1L2StackStation,
-} as const;
+import { STATIONS } from "./stations";
 
 /**
  * Frame-rate guard. Skips the first frames (shader compilation), then
@@ -100,7 +90,12 @@ export default function Workbench() {
 
   useEffect(() => {
     set({ sceneActive: true });
-    return () => set({ sceneActive: false, panel: null });
+    // Switches on the scene-only layout (the `scene` CSS variants in globals.css).
+    document.documentElement.dataset.scene = "on";
+    return () => {
+      set({ sceneActive: false, panel: null });
+      delete document.documentElement.dataset.scene;
+    };
   }, [set]);
 
   return (

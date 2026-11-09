@@ -383,28 +383,39 @@ export function TdasOrderingResult() {
  * Schematic of the reported latency-vs-temperature relationship.
  * Drawn from the summary values in the paper, not from raw samples.
  */
-export function TdasLatencyChart() {
-  // Plot area in SVG units
-  const W = 640;
-  const H = 300;
-  const m = { l: 56, r: 20, t: 20, b: 44 };
+/**
+ * The latency schematic itself. Drawn twice by TdasLatencyChart: a wide
+ * layout for tablets and up, and a narrower one for phones so the text
+ * doesn't shrink below a readable size.
+ */
+function LatencySvg({
+  W,
+  H,
+  xt,
+  thrLabel,
+  descId,
+  className,
+}: {
+  W: number;
+  H: number;
+  xt: number[];
+  thrLabel: string;
+  descId: string;
+  className: string;
+}) {
+  const m = { l: W < 500 ? 44 : 56, r: W < 500 ? 12 : 20, t: 20, b: 44 };
   const x0 = 76;
   const x1 = 85;
   const y0 = 190;
   const y1 = 216;
   const sx = (t: number) => m.l + ((t - x0) / (x1 - x0)) * (W - m.l - m.r);
   const sy = (v: number) => H - m.b - ((v - y0) / (y1 - y0)) * (H - m.t - m.b);
-  const xt = [76, 78, 80, 82, 84];
   const yt = [190, 196, 202, 208, 214];
   const thr = 80.8;
 
   return (
-    <Frame
-      title="Job latency vs SoC temperature (schematic)"
-      caption="Schematic of the reported values, not raw samples: a flat ~196 ms below the 80.8 °C throttling point and 208–212 ms when throttled. Fitted slope +0.208 ms/°C (95% CI [+0.070, +0.343]). The full scatter figure is in the paper."
-    >
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="tdas-chart-desc" className="h-auto w-full">
-        <desc id="tdas-chart-desc">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby={descId} className={`h-auto w-full ${className}`}>
+        <desc id={descId}>
           Latency stays near 196 milliseconds below 80.8 degrees Celsius, then sits between 208 and 212 milliseconds
           once the chip throttles.
         </desc>
@@ -429,7 +440,7 @@ export function TdasLatencyChart() {
         {/* throttling point */}
         <line x1={sx(thr)} x2={sx(thr)} y1={m.t} y2={H - m.b} stroke="var(--text-faint)" strokeDasharray="4 4" />
         <text x={sx(thr) + 6} y={m.t + 12} fontSize="12" fill="var(--text-dim)">
-          throttling point 80.8 °C
+          {thrLabel}
         </text>
 
         {/* throttled band 208–212 */}
@@ -468,7 +479,18 @@ export function TdasLatencyChart() {
         <text x={sx(82.9)} y={sy(212) - 10} textAnchor="middle" fontSize="13" fill="var(--text)">
           208–212 ms
         </text>
-      </svg>
+    </svg>
+  );
+}
+
+export function TdasLatencyChart() {
+  return (
+    <Frame
+      title="Job latency vs SoC temperature (schematic)"
+      caption="Schematic of the reported values, not raw samples: a flat ~196 ms below the 80.8 °C throttling point and 208–212 ms when throttled. Fitted slope +0.208 ms/°C (95% CI [+0.070, +0.343]). The full scatter figure is in the paper."
+    >
+      <LatencySvg W={640} H={300} xt={[76, 78, 80, 82, 84]} thrLabel="throttling point 80.8 °C" descId="tdas-chart-desc" className="hidden sm:block" />
+      <LatencySvg W={340} H={250} xt={[76, 80, 84]} thrLabel="throttles 80.8 °C" descId="tdas-chart-desc-sm" className="sm:hidden" />
       <details className="mt-3 text-sm text-dim">
         <summary className="cursor-pointer text-faint hover:text-text">Show as table</summary>
         <table className="mt-2">
