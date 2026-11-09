@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/* The site is intentionally dark: a desk at night under one warm lamp. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0f1c;
+  --bg-raised: #10172a;
+  --panel: rgba(14, 20, 36, 0.82);
+  --line: rgba(148, 163, 196, 0.16);
+  --line-strong: rgba(148, 163, 196, 0.32);
+  --text: #e8ecf5;
+  --text-dim: #a3adc2;
+  --text-faint: #8590a8;
+  --lamp: #ffb86b;
+  --fitos: #4c7dff;
+  --tdas: #ff6a3d;
+  --emotion: #19c3b1;
+  --escape: #9b6bff;
+  --todo: #f5b83d;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--bg-raised);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-dim: var(--text-dim);
+  --color-faint: var(--text-faint);
+  --color-lamp: var(--lamp);
+  --color-todo: var(--todo);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--lamp) 40%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--lamp);
+  color: #1a1206;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Glass card that sits over the 3D scene. */
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+/* Long-form MDX content on the project pages. */
+.prose-site {
+  color: var(--text-dim);
+  line-height: 1.75;
+  font-size: 1.0625rem;
+}
+.prose-site > * + * {
+  margin-top: 1.1em;
+}
+.prose-site h2 {
+  color: var(--text);
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.6em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+.prose-site h3 {
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 1.8em;
+}
+.prose-site strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.prose-site a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent, var(--lamp));
+  text-underline-offset: 3px;
+}
+.prose-site ul {
+  list-style: none;
+  padding-left: 0;
+}
+.prose-site ul > li {
+  position: relative;
+  padding-left: 1.4em;
+}
+.prose-site ul > li + li {
+  margin-top: 0.5em;
+}
+.prose-site ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.2em;
+  top: 0.72em;
+  width: 0.45em;
+  height: 0.45em;
+  border-radius: 2px;
+  background: var(--accent, var(--lamp));
+  opacity: 0.85;
+}
+.prose-site ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.prose-site ol > li + li {
+  margin-top: 0.5em;
+}
+.prose-site code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.88em;
+  color: var(--text);
+  background: rgba(148, 163, 196, 0.12);
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+}
+.prose-site table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.prose-site th,
+.prose-site td {
+  text-align: left;
+  padding: 0.55em 0.75em;
+  border-bottom: 1px solid var(--line);
+}
+.prose-site th {
+  color: var(--text);
+  font-weight: 600;
+}

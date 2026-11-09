@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "ClaudeInChromeDomain(localhost:3210)",
+      "mcp__claude-in-chrome__tabs_create_mcp",
+      "ClaudeInChromeDomain(localhost:3299)",
+      "ClaudeInChromeDomain(localhost:3100)",
+      "ClaudeInChromeDomain(srijansri-tech-1ktqz9843-srijan1202s-projects.vercel.app)",
+      "ClaudeInChromeDomain(srijansri-tech-f07zbpf63-srijan1202s-projects.vercel.app)"
+    ]
+  }
+}

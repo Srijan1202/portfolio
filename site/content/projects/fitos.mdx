@@ -1,0 +1,73 @@
+## What it is
+
+FITOS plans training, food and recovery from what you log. It covers a progressing training programme, Indian food and VIT mess menus, trend weight, recovery readiness, running, an AI coach and a social layer.
+
+It's a free Android **closed beta**, distributed from its own website with in-app updates.
+
+<Video
+  src="/videos/fitos-tour.mp4"
+  poster="/videos/fitos-tour-poster.jpg"
+  label="27-second screen recording touring the FITOS app"
+  caption="A 27-second tour of the app."
+/>
+
+<Screens
+  shots={[
+    { src: "/images/fitos/fitos-1-home.png", label: "Home", alt: "FITOS home screen: greeting, a 1-day streak with 1 of 6 sessions this week, a 'Back is behind' training suggestion, and today's cards for steps, active calories, food and workout" },
+    { src: "/images/fitos/fitos-2-today-water.png", label: "Today", alt: "FITOS today view: food at about 1,666 of 2,893 kcal, a completed Push workout, a water tracker at 1.5 of 2 litres, 7 h 30 min of sleep and readiness 90" },
+    { src: "/images/fitos/fitos-3-workout.png", label: "Workout", alt: "FITOS workout session for Push: four completed sets of barbell bench press at 50 kg for 6 reps, with a rest timer at 1:27" },
+    { src: "/images/fitos/fitos-4-mess-food.png", label: "Mess menu", alt: "FITOS food logging: the men's hostel lunch menu with items such as phulka, urad dhal and white rice, each with approximate calories" },
+    { src: "/images/fitos/fitos-5-recovery.png", label: "Recovery", alt: "FITOS recovery screen: readiness 90 out of 100 from a daily check-in, with a breakdown showing how sleep, soreness, energy and training affected the score" },
+    { src: "/images/fitos/fitos-6-progress.png", label: "Progress", alt: "FITOS progress screen: estimated one-rep maxes, including bench press 60 kg and overhead press 38 kg, and 1 of 6 planned sessions done this week" },
+  ]}
+/>
+
+## Architecture
+
+<FitosArchitecture />
+
+- A monorepo with `apps/mobile` (Flutter), `apps/api` (Fastify), `apps/admin` (Next.js), and the shared packages `packages/core`, `packages/contracts` and `packages/config`.
+- `packages/core` (~11k lines of TypeScript) is a deterministic domain engine for training, recovery, nutrition, running and recommendations. **The server is the source of truth.**
+- Zod contracts generate an OpenAPI spec (185 operations). CI fails when the spec drifts from the code.
+- PostgreSQL: 71 tables and 49 migrations, each with a tested rollback script.
+- Mobile: ~140k lines of Dart, 20 feature modules, Riverpod state, and a Drift local database.
+
+## Features
+
+- **Training engine:** progressive overload, deloads, MEV/MAV/MRV volume landmarks.
+- **Nutrition:** a 1,864-food database, VIT mess menus, and Gemini meal-photo logging.
+- **Progress & recovery:** trend weight and recovery readiness.
+- **Running:** GPS runs with MapLibre and Galaxy Watch support.
+- **AI coach:** Gemini, with streaming replies.
+- **Community:** friends, clubs and a leaderboard.
+
+## Infrastructure
+
+Production runs on **AWS**: EC2 (Docker + Caddy) and RDS PostgreSQL in Mumbai, defined in CloudFormation. Deploys run through SSM with no SSH, GitHub OIDC pushes images to ECR, and Firebase uses keyless Workload Identity Federation. Google Cloud Run is kept as a second, switchable target.
+
+## Quality
+
+- 4 GitHub Actions pipelines.
+- ~1,300 Flutter tests, with 100% branch coverage on the training engine.
+- API integration tests on an isolated database.
+- An OpenAPI diff in CI.
+- A load test: **p95 222 ms at 50 requests/second**.
+- 58 architecture decision records (ADRs).
+
+## Privacy by design
+
+Separate consent for each purpose, data export, cascading account deletion, and a community layer that shows counts only.
+
+## Challenges I solved
+
+### A tamper-proof leaderboard
+
+The phone never sends a score. The server counts from synced records using sanity rules, so there's nothing on the client to fake.
+
+### Offline-first sync
+
+A local queue with retries and a "Not synced yet" state. Totals count only what the server has confirmed, so the numbers you see never disagree with the leaderboard.
+
+### A release-only launch crash
+
+R8 code shrinking broke WorkManager in release builds only. I found it, fixed it and shipped a hotfix the same day.

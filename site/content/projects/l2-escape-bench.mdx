@@ -1,0 +1,77 @@
+## Why it matters
+
+Rollups rely on a sequencer to order transactions. The standard argument for trusting a centralised sequencer is the escape hatch: if it censors you, you can force your transaction in through Ethereum L1. That guarantee is almost always taken from the specification. I wanted to measure it: what does using it actually cost a user in time, fees and manual steps, and has it ever been usable at all?
+
+<ForcedInclusionPath />
+
+## What I built
+
+- **A measurement harness** in TypeScript with chain adapters for Arbitrum Nitro and the OP Stack. It tracks every transaction through nine stages, from signing to L1 finality, and records which clock each timestamp came from.
+- **A mainnet indexer and census** that reads every delayed message and batch Arbitrum One has ever produced.
+- **Analysis in Python**, using only the standard library for every estimator quoted. A reconciliation script re-derives every number in the write-up from the dataset.
+- **Instrument checks** built for rare-event measurement: positive controls, denominator and row-count reconciliation, contiguity checks, and a test for impossible timestamps.
+
+## Experiments
+
+| | What | Size |
+|---|---|---|
+| Public testnets | Arbitrum Sepolia and OP Sepolia, forced path vs normal path | 100 runs, 4 cells × 25, 25/25 successes in every cell |
+| Local devnet | I ran the sequencer and censored one specific transaction | 1 round, with `delayBlocks` shortened to 60 |
+| Mainnet census | Arbitrum One's full Nitro-era history | 1,332,810 batches over 10,540,270 contiguous L1 blocks; 2,563,796 delayed messages |
+
+<Terminal
+  command="python analysis/clockcheck.py --csv data/export.csv"
+  lines={[
+    "Clock-ordering validity check - data/export.csv",
+    "100 runs",
+    "",
+    "ORDERING - is any L2 timestamp below the L1 timestamp it is measured from?",
+    "  pairs compared: ['S3', 'S4'] x ['S7', 'S8']   (S5 inferred and S9 post-L2 are excluded)",
+    "    arb-sepolia/forced       runs=25   pairs=100   violations=0    none",
+    "    op-sepolia/forced        runs=25   pairs=100   violations=0    none",
+    "",
+    "  PASSED: 0 violations across 200 compared pairs.",
+  ]}
+  caption="An excerpt from the recorded reproduction run (some lines omitted). This check exists because the devnet run produced an impossible latency: an L2 block stamped earlier than the L1 block that forced it in."
+/>
+
+## Results
+
+### The escape hatch has never been reachable on Arbitrum One
+
+Not one of the 2,563,796 delayed messages Arbitrum One has received in about four years was left unread long enough for `forceInclusion` to become callable. The closest any message came was 1,250 blocks against a 7,200-block window: **17.4%** of the way. So the count of successful forced inclusions is zero, but that zero comes from the precondition never holding. It says nothing about whether users would use the hatch.
+
+| Read delay | L1 blocks | ≈ time |
+|---|---|---|
+| Median | 61 | 12 min |
+| 99th percentile | 113 | 23 min |
+| Maximum | 1,250 | 4.2 h |
+
+### Arbitrum vs OP Stack
+
+| | Arbitrum Nitro | OP Stack |
+|---|---|---|
+| L1 transactions the protocol requires | 2 (`sendL2Message`, `forceInclusion`) | 1 (`depositTransaction`) |
+| L1 transactions actually sent | 1 (the force step was never needed) | 1 |
+| Median forced-path cost | 1.054 × 10⁻⁴ ETH | 1.307 × 10⁻⁴ ETH |
+| Cost split | 94.8% L1, 5.2% L2 | 100% L1 (the deposit prepays execution) |
+| Forced ÷ normal cost | 19.2× | 3,351.8× |
+| Can usage be counted from events? | Yes | No: deposits look identical to ordinary bridging |
+
+Median time from L1 inclusion to L2 appearance was **766 s on Arbitrum Sepolia and 76 s on OP Sepolia** (Mann–Whitney U = 625, p = 1.29 × 10⁻⁹; the distributions don't overlap).
+
+<Callout tone="honest">
+766 s is not a forced-inclusion delay. In all 25 Arbitrum runs the sequencer read the message voluntarily and `forceInclusion` was never called, so the number measures how often the Arbitrum Sepolia sequencer polls its delayed inbox. That's an operator setting and doesn't transfer to mainnet. The only real forced recovery is the devnet run: 93 seconds, from a single run with parameters no production chain uses.
+</Callout>
+
+### Four surprises
+
+1. **Waiting longer makes forcing harder.** On the testnet, messages reached L2 a median of 23.79 hours *before* they became force-eligible. On a healthy chain the two conditions `forceInclusion` needs, delay elapsed and message still unread, can't both hold. So the hatch only opens while the failure it protects against is happening, and it can never be rehearsed.
+2. **The premium ratios mislead.** OP's 3,351× looks far worse than Arbitrum's 19×, but that's because OP's normal path is so cheap (3.9 × 10⁻⁸ ETH). In absolute terms OP's forced path costs about 24% more than Arbitrum's.
+3. **The submission step is used, the force step never is.** 357 signed transactions have entered through Arbitrum One's delayed inbox, in bursts that look like testing. The sequencer read every one within 24 minutes.
+4. **Two protections are weaker than they sound.** BoLD's delay buffer can't kick in during a first censorship incident, because it's only updated after the fact. And `forceInclusion` sweeps every message queued ahead of you, so you pay for strangers' transactions at a queue depth you can't see in advance.
+
+## What I'd do differently
+
+- Interleave the experimental cells instead of running each as a block. One cell's spread changed between its first and second half, and block collection makes it impossible to tell a transient from a property of the chain.
+- Size the sample in units of the clock's resolution rather than as a percentage of the median. In three of four cells, the original ±10% target was finer than the clock could measure.

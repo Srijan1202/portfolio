@@ -1,0 +1,38 @@
+## The problem
+
+Detecting stress in real time on cheap, resource-limited hardware, even when a sensor gives bad data.
+
+**Hardware:** ESP32, MAX30102 (heart rate), MPU6050 (motion), GSR sensor (skin conductance), SSD1306 OLED, a haptic motor and LEDs.
+
+<Photo
+  src="/images/emotion/breadboard.jpg"
+  width={1200}
+  height={1600}
+  alt="Breadboard prototype: ESP32 dev board at the bottom, OLED display at left, MAX30102 heart-rate sensor at top, MPU6050 motion sensor beside the ESP32, GSR module at the edge, plus a coin vibration motor and a red LED"
+  caption="The breadboard build: ESP32, OLED, MAX30102, MPU6050, GSR module, haptic motor and LED."
+/>
+
+## Architecture
+
+<EmotionPipeline />
+
+## The four modules
+
+- **Adaptive Weighted Fusion (AWF):** changes how much each sensor is trusted based on its signal quality, so the system degrades gracefully when a channel becomes unreliable.
+- **Emotional Trajectory Prediction (ETP):** detects stress proactively, before it peaks.
+- **Stress Accumulation Integration (SAI):** models stress load over time.
+- **Session Wellness Reporting (SMHR):** produces a wellness assessment at the end of a session, on the device.
+
+## Feedback loop
+
+Haptic intervention, visual indicators on LEDs, the OLED display, and a wireless monitoring dashboard over Wi-Fi.
+
+## Hardware bring-up stories
+
+- **One component at a time.** Each part was brought up on its own to isolate faults before anything was combined.
+- **A clone that lies about itself.** A clone MPU6050 reports `WHO_AM_I` 0x70 instead of the expected value, so the driver had to accept it.
+- **Corruption from the breadboard.** Flash partition corruption was traced to the breadboard wiring on the ESP32 boot-strapping pins.
+
+## Patent
+
+The system was developed as a patent application with VIT Vellore. The application is still in preparation and hasn't been filed.

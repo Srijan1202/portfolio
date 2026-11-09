@@ -1,0 +1,47 @@
+## The question
+
+Does job ordering reduce thermal throttling and tail latency on a fanless edge device?
+
+## Design
+
+- **Matched job types.** HOT and COOL jobs whose run times differ by 0.05% when the chip is cold, so any latency difference comes from heat, not the work.
+- **Four orders:** hot-first, cool-first, alternating and random, with 10 counterbalanced repetitions each.
+- **Controlled starts.** A standard cool-down and a pre-heat to 77 °C before every run.
+- **Preregistered.** Hypotheses, tests and pass/fail gates were written down before the data, with 7 dated amendments.
+- **Bare board.** A Raspberry Pi 4 Model B with no heatsink or fan, driven from a laptop.
+
+## Measurement and systems work
+
+- **A blind spot in the usual tool.** `scaling_cur_freq` showed none of the throttling, so throttling was read from firmware clock samples instead. That's how the throttling point was measured at **80.8 °C**, from 6,894 samples.
+- **The safety monitor was the problem.** It was causing stalls itself: 8 of 8 stalls matched its checks. I redesigned it to start no new processes.
+- **Safety systems:** an automatic stop at 85 °C, under-voltage detection, a 5 Hz temperature logger (23,843 samples) and hash-checked code on the device.
+
+## Results
+
+<TdasLatencyChart />
+
+<TdasOrderingResult />
+
+Ordering worked on temperature: time above the throttling point fell from **13.3 s to 0 s** per run. But P99 latency changed by **less than 1 ms (0.44%)**, so the preregistered latency hypothesis was **rejected**.
+
+## Analysis
+
+Bootstrap confidence intervals (10,000 resamples), Holm correction for multiple comparisons, and Cliff's δ for effect size. An independent re-analysis matched every result to within 10⁻⁶.
+
+## Why the result was negative, and what's next
+
+One-minute hot periods throttle only lightly, and only 2–3 of 600 jobs per run were slow. That's too few to move P99. The board's thermal state also drifted during the three-hour session, which widened the intervals.
+
+A follow-up would use hot blocks long enough to reach deep throttling, controlled ambient temperature, and a sample size chosen from the variance measured here. Whether ordering moves P99 under heavier thermal load is an open hypothesis, not a result.
+
+<Callout tone="honest">
+A negative result reported as a negative result. The preregistration is what makes it trustworthy.
+</Callout>
+
+## Write-up
+
+*Effect of Job Ordering on Thermal Throttling and Tail Latency on a Raspberry Pi 4: A Preregistered Negative Result*, with Dr. Padma Priya R. An 8-page IEEE-format paper in LaTeX with 7 figures and 3 tables, **under review at ICEAMST 2026**.
+
+The [findings site](https://tdasweb.vercel.app) walks through the results. The experiment code is on [GitHub](https://github.com/Srijan1202/fog).
+
+Built with AI assistance (Claude / Claude Code) for code, analysis and drafting.
