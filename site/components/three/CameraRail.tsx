@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { projects, type Vec3 } from "@/content/projects";
 import { rail, useSite } from "@/lib/store";
@@ -39,9 +39,14 @@ function sample(p: number, aspect: number, outPos: THREE.Vector3, outTarget: THR
   const shift = (s: Stop): Vec3 => {
     if (!s.side) return [0, 0, 0];
     // Desktop: the HTML card sits on the left, so frame the object right of centre.
-    // Portrait: the card covers the lower half, so frame the object higher.
-    return wide ? [-1.5, 0, 0] : [0, -0.55, 1.8];
+    // Portrait: the card covers the lower 55% of the screen, so aim well below
+    // the object to lift it into the free space at the top.
+    return wide ? [-1.5, 0, 0] : [0, -1.2, 0];
   };
+  // Portrait: also move the camera back so the whole object fits the narrow view.
+  const reach = (s: Stop) => (!wide && s.side ? 1.5 : 1);
+  const ra = reach(a);
+  const rb = reach(b);
   const sa = shift(a);
   const sb = shift(b);
 
@@ -49,8 +54,8 @@ function sample(p: number, aspect: number, outPos: THREE.Vector3, outTarget: THR
     const ta = a.target[k] + sa[k];
     const tb = b.target[k] + sb[k];
     const t = ta + (tb - ta) * f;
-    const pa = ta + a.offset[k];
-    const pb = tb + b.offset[k];
+    const pa = ta + a.offset[k] * ra;
+    const pb = tb + b.offset[k] * rb;
     outTarget.setComponent(k, t);
     outPos.setComponent(k, pa + (pb - pa) * f);
   }
@@ -63,6 +68,24 @@ export function CameraRail() {
   const pointer = useRef({ x: 0, y: 0 });
   const first = useRef(true);
 
+  // Phones: tilt the device to shift the view. Only where the browser gives
+  // orientation without a permission prompt (Android); iOS is left alone.
+  const tilt = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const D = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & { requestPermission?: unknown }) | undefined;
+    if (!D || typeof D.requestPermission === "function") return;
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    const on = (e: DeviceOrientationEvent) => {
+      if (e.gamma === null || e.beta === null) return;
+      tilt.current = {
+        x: THREE.MathUtils.clamp(e.gamma / 30, -1, 1),
+        y: THREE.MathUtils.clamp((e.beta - 45) / 30, -1, 1),
+      };
+    };
+    window.addEventListener("deviceorientation", on);
+    return () => window.removeEventListener("deviceorientation", on);
+  }, []);
+
   useFrame((state, dt) => {
     const aspect = size.width / Math.max(size.height, 1);
     sample(rail.progress, aspect, tmpPos, tmpTarget);
@@ -70,8 +93,9 @@ export function CameraRail() {
     const reduced = useSite.getState().reducedMotion;
     // Gentle pointer parallax (off under reduced motion).
     if (!reduced) {
-      pointer.current.x = THREE.MathUtils.damp(pointer.current.x, state.pointer.x, 3, dt);
-      pointer.current.y = THREE.MathUtils.damp(pointer.current.y, state.pointer.y, 3, dt);
+      const aim = tilt.current ?? state.pointer;
+      pointer.current.x = THREE.MathUtils.damp(pointer.current.x, aim.x, 3, dt);
+      pointer.current.y = THREE.MathUtils.damp(pointer.current.y, aim.y, 3, dt);
       tmpPos.x += pointer.current.x * 0.25;
       tmpPos.y += pointer.current.y * 0.12;
     }

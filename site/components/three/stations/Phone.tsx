@@ -141,8 +141,8 @@ function drawScreen(g: CanvasRenderingContext2D, w: number, h: number, feature: 
 
 /** Real app screenshots, used for the features that have one. The rest keep the drawn screen. */
 const SCREENSHOTS: Partial<Record<FitosFeature, string>> = {
-  Training: "/images/fitos/fitos-3-workout.png",
-  Nutrition: "/images/fitos/fitos-4-mess-food.png",
+  Training: "/images/fitos/fitos-3-workout-sm.jpg",
+  Nutrition: "/images/fitos/fitos-4-mess-food-sm.jpg",
 };
 
 /** Cover-fit an image into the screen canvas. */

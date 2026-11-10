@@ -7,9 +7,11 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { projects } from "@/content/projects";
 import { useSite } from "@/lib/store";
+import { play } from "@/lib/sound";
 import { CameraRail } from "./CameraRail";
 import { ContactTerminal, DeskSurface, HeroText, Lamp, StationLabel } from "./Desk";
 import { STATIONS } from "./stations";
+import { PhotoTaker, StickyNotes, daylightNow } from "./Extras";
 
 /**
  * Frame-rate guard. Skips the first frames (shader compilation), then
@@ -46,15 +48,17 @@ function FrameGuard() {
 
 function Scene() {
   const quality = useSite((s) => s.quality);
+  // Room light follows the visitor's local time: brighter and cooler by day.
+  const [day] = useState(daylightNow);
   return (
     <>
       <color attach="background" args={["#0a0f1c"]} />
       <fog attach="fog" args={["#0a0f1c", 9, 26]} />
 
       {/* Lighting: one warm key (the lamp), a cool night fill, per-station accents. */}
-      <ambientLight intensity={0.22} color="#8fa3d9" />
+      <ambientLight intensity={0.22 + 0.3 * day} color="#8fa3d9" />
       <hemisphereLight args={["#2b3b6b", "#0a0f1c", 0.5]} />
-      <directionalLight position={[6, 6, 5]} intensity={0.55} color="#ffd9b0" />
+      <directionalLight position={[6, 6, 5]} intensity={0.55 + 0.6 * day} color={day > 0.5 ? "#fff1dc" : "#ffd9b0"} />
       <directionalLight position={[-8, 4, -2]} intensity={0.25} color="#6d8cff" />
       <Lamp quality={quality} />
 
@@ -70,6 +74,8 @@ function Scene() {
         );
       })}
       <ContactTerminal />
+      <StickyNotes />
+      <PhotoTaker />
 
       <CameraRail />
       <FrameGuard />
@@ -85,6 +91,10 @@ function Scene() {
 
 export default function Workbench() {
   const quality = useSite((s) => s.quality);
+  const stop = useSite((s) => s.activeStop);
+  useEffect(() => {
+    play("step");
+  }, [stop]);
   const set = useSite((s) => s.set);
   const [visible, setVisible] = useState(false);
 

@@ -12,6 +12,9 @@ import {
 } from "@/content/site";
 import { ProjectCard, TagList } from "@/components/ProjectCard";
 import { StationControls } from "@/components/StationControls";
+import { Terminal } from "@/components/Terminal";
+import { TourButton } from "@/components/Tour";
+import { SkillsGrid } from "@/components/SkillsGrid";
 import { Todo } from "@/components/OpenItems";
 
 type Mode = "full" | "lite";
@@ -43,7 +46,7 @@ function Hero({ mode }: { mode: Mode }) {
         // Phones: fade the scene out behind the hero text so it stays legible.
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-[85%] bg-linear-to-t from-bg via-bg/85 to-transparent scene-mobile:block"
+          className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-full bg-linear-to-t from-bg via-bg/95 to-bg/40 scene-mobile:block"
         />
       )}
       <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -74,16 +77,23 @@ function Hero({ mode }: { mode: Mode }) {
             >
               View projects
             </Link>
-            <a href={profile.resume} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp">
+            <a href={profile.resume} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp max-sm:hidden">
               Resume
             </a>
-            <a href={profile.github} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp">
+            <a href={profile.github} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp max-sm:hidden">
               GitHub
             </a>
-            <a href={profile.linkedin} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp">
+            <a href={profile.linkedin} className="rounded-lg border border-line-strong bg-bg/40 px-4 py-2.5 text-sm font-medium text-text hover:border-lamp max-sm:hidden">
               LinkedIn
             </a>
+            {mode === "full" && <TourButton />}
           </div>
+          {profile.now && (
+            <p className="mt-4 text-sm text-dim">
+              <span className="mr-2 rounded-full border border-lamp/50 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-lamp">Now</span>
+              {profile.now}
+            </p>
+          )}
 
           {/* Recruiter skim: all four projects visible above the fold. */}
           <nav aria-label="Projects" className="mt-8">
@@ -216,31 +226,7 @@ function Skills({ mode }: { mode: Mode }) {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="glass rounded-2xl p-6 sm:p-10">
           <SectionHeading kicker="Skills" title="Only what the projects back up" id="skills-title" />
-          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-            {skills.map((g) => (
-              <div key={g.group} className="border-t border-line pt-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="font-medium text-text">{g.group}</h3>
-                  <p className="text-xs text-faint">
-                    Proven by{" "}
-                    {g.provenBy.map((p, i) => (
-                      <span key={p.label}>
-                        {i > 0 && ", "}
-                        {p.href ? (
-                          <Link href={p.href} className="text-dim underline decoration-line-strong underline-offset-2 hover:text-text">
-                            {p.label}
-                          </Link>
-                        ) : (
-                          p.label
-                        )}
-                      </span>
-                    ))}
-                  </p>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-dim">{g.skills.join(" · ")}</p>
-              </div>
-            ))}
-          </div>
+          <SkillsGrid skills={skills} />
         </div>
       </div>
     </section>
@@ -310,7 +296,7 @@ function Contact({ mode }: { mode: Mode }) {
       className={mode === "full" ? "pointer-events-none flex scroll-mt-14 items-center py-20 scene:min-h-[100svh]" : "scroll-mt-14 py-16"}
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <div className="glass pointer-events-auto w-full max-w-[520px] rounded-2xl p-6 sm:p-8">
+        <div className="glass pointer-events-auto w-full max-w-[600px] rounded-2xl p-6 sm:p-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-lamp">Contact</p>
           <h2 id="contact-title" className="mt-2 font-display text-3xl font-semibold tracking-tight text-text">
             Let&apos;s talk
@@ -326,6 +312,12 @@ function Contact({ mode }: { mode: Mode }) {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-sm text-dim">
+            Or poke around: this terminal works. Try <code className="font-mono text-text">help</code>.
+          </p>
+          <div className="mt-3">
+            <Terminal />
+          </div>
         </div>
       </div>
     </section>

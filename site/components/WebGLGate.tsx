@@ -76,7 +76,7 @@ export function WebGLGate() {
     <>
       {verdict.mode === "on" && <Workbench />}
       {verdict.mode !== "pending" && (
-        <div className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-2 text-xs">
+        <div className="photo-hide fixed right-[max(0.75rem,env(safe-area-inset-right))] z-30 flex items-center gap-2 text-xs max-sm:top-[4.25rem] max-sm:text-[11px] max-sm:opacity-80 sm:right-[max(1rem,env(safe-area-inset-right))] sm:bottom-[max(1rem,env(safe-area-inset-bottom))]">
           {verdict.mode === "off" && verdict.reason === "no-webgl" && (
             <span className="glass rounded-md px-2.5 py-1.5 text-dim">
               3D needs WebGL. <Link href="/lite" className="underline">2D version</Link>

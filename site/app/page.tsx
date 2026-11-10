@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import { HomeContent } from "@/components/HomeContent";
 import { WebGLGate } from "@/components/WebGLGate";
 import { RailTracker } from "@/components/RailTracker";
 import { ProjectPanel } from "@/components/ProjectPanel";
+import { DeskUI } from "@/components/DeskUI";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function Home() {
   return (
@@ -11,6 +15,7 @@ export default function Home() {
       <RailTracker />
       <HomeContent mode="full" />
       <ProjectPanel />
+      <DeskUI />
     </>
   );
 }

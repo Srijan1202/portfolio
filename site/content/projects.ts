@@ -27,6 +27,8 @@ export type Project = {
   dates: string;
   role?: string;
   context?: string;
+  /** The project in plain English, for non-specialist readers. */
+  plain: string[];
   tags: string[];
   /** All headline numbers. The first three are shown on the card. */
   stats: Stat[];
@@ -51,6 +53,11 @@ export const projects: Project[] = [
     status: "Closed beta (Android)",
     dates: "Sep 2026 – present",
     role: "Solo, full stack",
+    plain: [
+      "FITOS is a fitness app for Android. You log your workouts, meals and sleep, and it tells you what to do next: how much weight to lift, what to eat, and whether to rest.",
+      "I built all of it myself: the phone app, the server behind it and the database.",
+      "A small group of real users is testing it (a closed beta), and it has had more than 30 updates so far.",
+    ],
     tags: ["Flutter", "TypeScript", "Fastify", "PostgreSQL", "AWS", "Gemini"],
     stats: [
       { value: "185", label: "API endpoints · 71 tables · 49 migrations", source: "Generated OpenAPI spec and migration folder" },
@@ -77,6 +84,11 @@ export const projects: Project[] = [
     status: "Preregistered study · paper under review at ICEAMST 2026",
     dates: "Oct – Nov 2026",
     context: "VIT Vellore, under Dr. Padma Priya R (BCSE313L Fog and Edge Computing)",
+    plain: [
+      "Small computers with no fan slow themselves down when they get too hot. I tested an idea: if you run heavy and light jobs in a smarter order, does the computer stay cooler and finish its slowest jobs faster?",
+      "I wrote down how the result would be judged before running anything, then ran 24,000 jobs on a Raspberry Pi.",
+      "The answer: a smarter order did keep it cooler, but it didn't make the slow jobs noticeably faster. I reported that as it is, a negative result. The paper is under review.",
+    ],
     tags: ["Raspberry Pi 4", "Python", "Linux", "Statistics", "LaTeX"],
     stats: [
       { value: "24,000", label: "jobs over 40 controlled runs", source: "Run logs" },
@@ -102,6 +114,11 @@ export const projects: Project[] = [
       "A real-time emotion and stress detection device on an ESP32 that fuses heart-rate, motion and skin-conductance signals and responds with haptic feedback.",
     status: "Hardware prototype",
     dates: "2026",
+    plain: [
+      "A small device that estimates how stressed someone is from their heart rate, movement and skin moisture, and gives a gentle vibration when stress is building.",
+      "It runs on a very cheap chip with very little memory. When one sensor gives bad readings, it trusts the other sensors more and keeps working.",
+      "It's a working prototype on a breadboard. A patent application with VIT Vellore is in preparation.",
+    ],
     tags: ["Embedded C", "ESP32", "Signal Processing", "IoT"],
     stats: [
       { value: "< 600 KB", label: "SRAM footprint", source: "Build output" },
@@ -129,6 +146,11 @@ export const projects: Project[] = [
       "A reproducible harness that measures what it costs to force a transaction onto a Layer-2 rollup through Ethereum L1, plus a full-history census of whether Arbitrum One's escape hatch has ever been usable.",
     status: "Experiment harness · testnet, devnet and mainnet measurements",
     dates: "2026",
+    plain: [
+      "Some blockchain networks, called rollups, rely on a single operator to process transactions. They promise an emergency exit: if the operator ignores you, you can push your transaction through the main Ethereum network instead.",
+      "I built tools to measure what using that exit actually costs, and checked the full history of one major network, Arbitrum One.",
+      "The finding: in about four years and 2.5 million messages, the emergency exit could never actually have been used. It only opens during a failure, and no failure has lasted long enough.",
+    ],
     tags: ["TypeScript", "Python", "Ethereum", "Arbitrum", "OP Stack", "Statistics"],
     stats: [
       {

@@ -62,3 +62,17 @@ Every dynamic light makes every lit material's shader bigger. On Windows/ANGLE a
 - **2D panel transitions:** CSS instead of Framer Motion (one less dependency).
 - **No-WebGL visitors on `/`:** they get the same HTML page without the canvas, rather than a redirect to `/lite`. The content is identical and there's no layout jump. `/lite` still exists as a standalone 2D page.
 - **Detail-page header model** (`components/ProjectModel.tsx` → `three/StationPreview.tsx`): reuses the station component on a transparent canvas, desktop and tablet only. It follows the same on/off rules as the home scene (`lib/webgl.ts`), pauses when scrolled out of view, and switches off if frames average over 70 ms.
+
+## Extras
+
+| Feature | Where | Notes |
+|---|---|---|
+| 60-second tour | `components/Tour.tsx` | Scrolls stop to stop with captions; any scroll, key or touch stops it. |
+| Role filter | `components/SkillsGrid.tsx`, `roles` in `content/site.ts` | Highlights the skill groups and projects behind each kind of role. |
+| Plain-English summary | `plain` on each project in `content/projects.ts` | Shown as a toggle on the case study. |
+| Print one-pager | `components/PrintButton.tsx`, print rules in `app/globals.css` | |
+| "Now" line | `profile.now` in `content/site.ts` | Update it as things change. |
+| Terminal | `components/Terminal.tsx` | `help` lists commands; `lamp`, `sound`, `coffee` drive the 3D desk. |
+| Ask my portfolio | `app/api/ask/route.ts` | Uses Gemini's free tier. **Off until `GEMINI_API_KEY` is set in the Vercel project** (`GEMINI_MODEL` overrides the default `gemini-3.8-flash`). On the free tier Google may use questions to improve its products. Rate limits are per server instance. |
+| Sticky notes | `content/notes.ts`, `components/three/Extras.tsx`, `components/DeskUI.tsx` | Every note's fact must also be in a case study. |
+| Lamp, daylight, mug steam, photo mode, sounds, tilt | `components/three/Extras.tsx`, `Desk.tsx`, `lib/sound.ts`, `CameraRail.tsx` | Room light follows the visitor's local time. Sound is off by default. Tilt is Android only. |

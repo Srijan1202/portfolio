@@ -90,7 +90,7 @@ export function ProjectCard({
       <div className="mt-2">
         <ProjectMeta project={project} />
       </div>
-      <p className={`mt-3 text-[15px] leading-relaxed text-dim ${c("scene-mobile:line-clamp-3")}`}>{project.oneLiner}</p>
+      <p className={`mt-3 text-[15px] leading-relaxed text-dim ${c("scene-mobile:line-clamp-2")}`}>{project.oneLiner}</p>
       <div className="mt-4">
         <StatGrid
           stats={project.stats.slice(0, 3)}

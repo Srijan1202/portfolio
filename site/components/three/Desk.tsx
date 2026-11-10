@@ -1,11 +1,14 @@
 "use client";
 
 import { Text } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { profile } from "@/content/site";
-import { BlobShadow, FONT_BOLD, FONT_MEDIUM, roundRect, seededRandom, useCanvasTexture } from "./util";
+import { useSite } from "@/lib/store";
+import { play } from "@/lib/sound";
+import { BlobShadow, FONT_BOLD, FONT_MEDIUM, roundRect, seededRandom, useCanvasTexture, useHoverCursor } from "./util";
+import { Steam, daylightNow } from "./Extras";
 import { CONTACT_X, HERO_X } from "./CameraRail";
 
 const DESK_MIN = -5;
@@ -91,6 +94,11 @@ function Pegboard() {
 export function Lamp({ quality }: { quality: "high" | "low" }) {
   const spot = useRef<THREE.SpotLight>(null);
   const target = useMemo(() => new THREE.Object3D(), []);
+  const on = useSite((s) => s.lampOn);
+  const set = useSite((s) => s.set);
+  const hover = useHoverCursor();
+  // The lamp matters less in daytime, when the room light is up.
+  const day = useMemo(() => daylightNow(), []);
   useEffect(() => {
     target.position.set(HERO_X + 0.2, 0, 0.2);
     if (spot.current) spot.current.target = target;
@@ -122,21 +130,31 @@ export function Lamp({ quality }: { quality: "high" | "low" }) {
           <meshStandardMaterial color="#3a3f48" metalness={0.8} roughness={0.3} />
         </mesh>
         {/* head */}
-        <group position={[1.3, 1.5, 0.55]} rotation={[-0.25, 0, 0.8]}>
+        {/* Click the lamp head to switch it. */}
+        <group
+          position={[1.3, 1.5, 0.55]}
+          rotation={[-0.25, 0, 0.8]}
+          onClick={(e) => {
+            e.stopPropagation();
+            play("click");
+            set({ lampOn: !on });
+          }}
+          {...hover}
+        >
           <mesh>
             <coneGeometry args={[0.26, 0.38, 32, 1, true]} />
             <meshStandardMaterial color="#2a2d33" metalness={0.6} roughness={0.4} side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, -0.12, 0]}>
             <sphereGeometry args={[0.09, 16, 16]} />
-            <meshBasicMaterial color={[4, 2.6, 1.4]} toneMapped={false} />
+            <meshBasicMaterial color={on ? [4, 2.6, 1.4] : [0.25, 0.22, 0.2]} toneMapped={false} />
           </mesh>
         </group>
         <spotLight
           ref={spot}
           position={[1.3, 1.45, 0.55]}
           color="#ffc58a"
-          intensity={quality === "high" ? 28 : 20}
+          intensity={on ? (quality === "high" ? 28 : 20) * (1 - 0.35 * day) : 0}
           angle={0.85}
           penumbra={0.75}
           distance={9}
@@ -148,8 +166,12 @@ export function Lamp({ quality }: { quality: "high" | "low" }) {
 }
 
 export function HeroText() {
+  // On portrait screens the HTML hero sits on top of this lettering, so leave it out.
+  const portrait = useThree((s) => s.size.width / Math.max(s.size.height, 1) < 1.1);
   return (
     <group position={[HERO_X, 0, 0.1]}>
+      {!portrait && (
+      <>
       <Text
         font={FONT_BOLD}
         fontSize={0.34}
@@ -175,6 +197,8 @@ export function HeroText() {
       >
         FULL-STACK · EMBEDDED · CAREFUL EXPERIMENTS
       </Text>
+      </>
+      )}
       {/* scroll hint arrow on the desk */}
       <ScrollHint />
       <Mug position={[2.5, 0, -0.5]} />
@@ -196,8 +220,16 @@ function ScrollHint() {
 }
 
 function Mug({ position }: { position: [number, number, number] }) {
+  const hover = useHoverCursor();
   return (
-    <group position={position}>
+    <group
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        useSite.getState().set({ steam: useSite.getState().steam + 1 });
+      }}
+      {...hover}
+    >
       <BlobShadow w={0.6} d={0.6} />
       <mesh position={[0, 0.17, 0]}>
         <cylinderGeometry args={[0.13, 0.12, 0.34, 32, 1, true]} />
@@ -211,34 +243,41 @@ function Mug({ position }: { position: [number, number, number] }) {
         <torusGeometry args={[0.07, 0.018, 12, 24, Math.PI]} />
         <meshStandardMaterial color="#d9d4ca" roughness={0.5} />
       </mesh>
+      <Steam />
     </group>
   );
 }
 
-/** End-of-desk contact station: a small terminal showing the links. */
+/** Shown until the visitor types something into the HTML terminal. */
+const IDLE_SCREEN = [
+  "$ whoami",
+  "srijan srivastava",
+  "$ contact --all",
+  "email    srijan.srivastava1202",
+  "         @gmail.com",
+  "github   srijan1202",
+  "linkedin srijansrivastava1202",
+  "$ type `help` on the card_",
+];
+
+/** End-of-desk contact station: a small terminal that mirrors the HTML one on the Contact card. */
 export function ContactTerminal() {
   const { tex, ctx, canvas } = useCanvasTexture(512, 320);
+  const screen = useSite((s) => s.termScreen);
   useEffect(() => {
     const g = ctx;
     g.fillStyle = "#07110d";
     g.fillRect(0, 0, canvas.width, canvas.height);
     g.font = "600 22px ui-monospace, Menlo, Consolas, monospace";
-    const lines: [string, string][] = [
-      ["#7ee2a8", "$ whoami"],
-      ["#d6f5e3", "srijan srivastava"],
-      ["#7ee2a8", "$ contact --all"],
-      ["#d6f5e3", "email    srijan.srivastava1202"],
-      ["#d6f5e3", "         @gmail.com"],
-      ["#d6f5e3", "github   srijan1202"],
-      ["#d6f5e3", "linkedin srijansrivastava1202"],
-      ["#7ee2a8", "$ open resume.pdf_"],
-    ];
-    lines.forEach(([c, l], i) => {
-      g.fillStyle = c;
-      g.fillText(l, 24, 42 + i * 36);
+    const lines = (screen.length ? screen : IDLE_SCREEN).slice(-8);
+    lines.forEach((l, i) => {
+      const cmd = l.startsWith("$ ");
+      g.fillStyle = cmd ? "#7ee2a8" : "#d6f5e3";
+      // ~35 monospace characters fit across the screen.
+      g.fillText(l.length > 35 ? `${l.slice(0, 34)}…` : l, 24, 42 + i * 36);
     });
     tex.needsUpdate = true;
-  }, [ctx, canvas, tex]);
+  }, [ctx, canvas, tex, screen]);
 
   return (
     <group position={[CONTACT_X + 0.4, 0, -0.1]} rotation-y={-0.35}>

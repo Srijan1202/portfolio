@@ -212,3 +212,70 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* Tour caption: the bar fills over the time spent at each stop. */
+@keyframes tour-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.tour-fill {
+  animation: tour-fill linear forwards;
+}
+
+/* Photo mode: hide the page so only the 3D desk shows. */
+html[data-photo="on"] main,
+html[data-photo="on"] body > header,
+html[data-photo="on"] footer,
+html[data-photo="on"] .photo-hide {
+  visibility: hidden;
+}
+
+/* Print: each case study becomes a clean, light one-pager. */
+@media print {
+  :root {
+    --bg: #fff;
+    --text: #111;
+    --text-dim: #333;
+    --text-faint: #555;
+    --line: #ccc;
+    --line-strong: #999;
+    --panel: #fff;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  body > header,
+  footer,
+  nav,
+  video,
+  canvas,
+  .no-print,
+  .skip-link,
+  [aria-hidden="true"].pointer-events-none {
+    display: none !important;
+  }
+  .glass {
+    background: #fff !important;
+    backdrop-filter: none !important;
+  }
+  .prose-site h2 {
+    break-after: avoid;
+  }
+  figure,
+  table {
+    break-inside: avoid;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #555;
+  }
+}
+
+/* Phones with the 3D scene on: cards are nearly opaque so the desk doesn't show through their text. */
+@media (width < 40rem) {
+  html[data-scene="on"] .glass {
+    background: rgba(12, 18, 33, 0.96);
+  }
+}

@@ -23,6 +23,21 @@ type State = {
   tdasOrder: JobOrder;
   unplugged: Record<SensorId, boolean>;
   sequencerOffline: boolean;
+  /** Last lines of the Contact terminal, mirrored on the 3D screen ("$ " marks a command). */
+  termScreen: string[];
+
+  /** Desk lamp, toggled by clicking it or from the terminal. */
+  lampOn: boolean;
+  /** Bumped to make the mug steam (click it, or run "coffee" in the terminal). */
+  steam: number;
+  /** Sticky note currently open (id from content/notes.ts). */
+  note: string | null;
+  /** UI sounds. Off until the visitor turns them on. */
+  sound: boolean;
+  /** Photo mode: page content hidden so the desk can be captured. */
+  photo: boolean;
+  /** Bumped to save a photo of the desk. */
+  photoShot: number;
 
   set: (partial: Partial<Omit<State, "set" | "toggleSensor">>) => void;
   toggleSensor: (id: SensorId) => void;
@@ -39,6 +54,13 @@ export const useSite = create<State>((set) => ({
   tdasOrder: "hot-first",
   unplugged: { hr: false, motion: false, gsr: false },
   sequencerOffline: false,
+  termScreen: [],
+  lampOn: true,
+  steam: 0,
+  note: null,
+  sound: false,
+  photo: false,
+  photoShot: 0,
   set: (partial) => set(partial),
   toggleSensor: (id) => set((s) => ({ unplugged: { ...s.unplugged, [id]: !s.unplugged[id] } })),
 }));

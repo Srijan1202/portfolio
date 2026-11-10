@@ -7,8 +7,9 @@ export const profile = {
   tagline:
     "CS undergrad at VIT Vellore. I build full-stack apps, embedded systems and careful experiments.",
   status: "B.Tech CSE, VIT Vellore · Graduating July 2027",
-  /** O-8: roles being targeted. Leave empty until confirmed. */
   lookingFor: "Open to software engineering roles",
+  /** One line on what's current. Shown in the hero; update it as things change. */
+  now: "FITOS is in closed beta on Android · the TDAS paper is under review at ICEAMST 2026",
   email: "srijan.srivastava1202@gmail.com",
   github: "https://github.com/srijan1202",
   linkedin: "https://www.linkedin.com/in/srijansrivastava1202",
@@ -16,7 +17,7 @@ export const profile = {
 };
 
 export const bio =
-  "I'm a third-year CSE student at VIT Vellore. I like projects that go end to end: a mobile app that's actually in testers' hands, an experiment with preregistered stats, or a sensor board that has to work in under 600 KB of memory. I care about measuring things properly and shipping things that work.";
+  "I'm a final-year CSE student at VIT Vellore. I like projects that go end to end: a mobile app that's actually in testers' hands, an experiment with preregistered stats, or a sensor board that has to work in under 600 KB of memory. I care about measuring things properly and shipping things that work.";
 
 export const experience = [
   {
@@ -59,7 +60,7 @@ export const skills: SkillGroup[] = [
   { group: "AI", skills: ["Google Gemini (streaming, vision)", "Prompt guard rails"], provenBy: [{ label: "FITOS", href: "/projects/fitos" }] },
   { group: "Embedded", skills: ["Embedded C", "ESP32", "I²C sensors", "Signal processing"], provenBy: [{ label: "Emotion Detection", href: "/projects/emotion-detection" }] },
   { group: "Systems & research", skills: ["Python", "Linux internals", "Raspberry Pi", "Benchmarking", "Bootstrap / Holm / Cliff's δ", "LaTeX"], provenBy: [{ label: "TDAS", href: "/projects/thermal-aware-job-ordering" }] },
-  { group: "Blockchain", skills: ["Ethereum", "OP Stack", "Arbitrum", "RPC"], provenBy: [{ label: "L2 Escape Bench", href: "/projects/l2-escape-bench" }] },
+  { group: "Blockchain", skills: ["Ethereum", "OP Stack", "Arbitrum", "TypeScript", "RPC"], provenBy: [{ label: "L2 Escape Bench", href: "/projects/l2-escape-bench" }] },
   { group: "Other languages", skills: ["Java", "C++", "Go", "SQL", "Bash"], provenBy: [{ label: "Coursework / resume" }] },
   { group: "AI-assisted development", skills: ["Claude / Claude Code for code, analysis and drafting"], provenBy: [{ label: "TDAS (disclosed)", href: "/projects/thermal-aware-job-ordering" }, { label: "FITOS", href: "/projects/fitos" }] },
 ];
@@ -78,4 +79,12 @@ export const otherProjects = [
       "A desktop performance-optimisation platform that switches performance profiles when heavy apps launch.",
     tags: ["Electron", "React", "C#", "ASP.NET Core"],
   },
+];
+
+/** Role filter in the Skills section: which skill groups and projects back each kind of role. */
+export const roles: { id: string; groups: string[]; projects: string[] }[] = [
+  { id: "Backend", groups: ["Backend", "Cloud/DevOps", "AI"], projects: ["fitos", "l2-escape-bench"] },
+  { id: "Mobile", groups: ["Mobile", "AI"], projects: ["fitos"] },
+  { id: "Embedded", groups: ["Embedded", "Systems & research"], projects: ["emotion-detection", "thermal-aware-job-ordering"] },
+  { id: "Research", groups: ["Systems & research", "Blockchain"], projects: ["thermal-aware-job-ordering", "l2-escape-bench"] },
 ];

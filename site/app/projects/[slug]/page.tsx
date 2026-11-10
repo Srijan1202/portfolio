@@ -5,6 +5,7 @@ import { adjacentProjects, getProject, projects } from "@/content/projects";
 import { ProjectMeta, StatGrid, TagList } from "@/components/ProjectCard";
 import { OpenItems } from "@/components/OpenItems";
 import { ProjectModel } from "@/components/ProjectModel";
+import { PrintButton } from "@/components/PrintButton";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -66,6 +67,18 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           </div>
           <p className="mt-5 text-lg leading-relaxed text-dim">{project.oneLiner}</p>
 
+          <details className="no-print group mt-4 rounded-xl border border-line bg-white/[0.02] open:bg-white/[0.04]">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-text marker:hidden">
+              <span aria-hidden className="mr-2 inline-block transition-transform group-open:rotate-90">▸</span>
+              Explain it in plain English
+            </summary>
+            <div className="space-y-2 px-4 pb-4 text-[15px] leading-relaxed text-dim">
+              {project.plain.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          </details>
+
           <div className="mt-6">
             <StatGrid stats={project.stats.slice(0, 3)} accent={project.accent} />
           </div>
@@ -82,8 +95,11 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <TagList tags={project.tags} />
           </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <PrintButton />
+          </div>
           {project.links.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="no-print mt-2 flex flex-wrap gap-2">
               {project.links.map((l) => (
                 <a
                   key={l.href}
