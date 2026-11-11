@@ -55,3 +55,15 @@ export function isLowEnd(): boolean {
 export function isSmallScreen(): boolean {
   return window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
 }
+
+const PREVIEW_SLOW_KEY = "srijansri:preview-slow";
+
+/** Like sessionSlowFlag, for the small header models only. */
+export function previewSlowFlag(set?: boolean): boolean {
+  try {
+    if (set === true) sessionStorage.setItem(PREVIEW_SLOW_KEY, "1");
+    return sessionStorage.getItem(PREVIEW_SLOW_KEY) === "1";
+  } catch {
+    return false;
+  }
+}

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useSite } from "@/lib/store";
-import { hasWebGL, isLowEnd, readPref, sessionSlowFlag } from "@/lib/webgl";
+import { hasWebGL, isLowEnd, readPref, previewSlowFlag } from "@/lib/webgl";
 
 // Loads only on the client, after the page has painted.
 const StationPreview = dynamic(() => import("@/components/three/StationPreview"), { ssr: false });
@@ -26,7 +26,7 @@ export function ProjectModel({ slug, accent }: { slug: string; accent: string })
     const ok =
       window.matchMedia("(min-width: 768px)").matches &&
       pref !== "off" &&
-      !(pref !== "on" && sessionSlowFlag()) &&
+      !(pref !== "on" && previewSlowFlag()) &&
       !(pref !== "on" && isLowEnd()) &&
       hasWebGL();
     // Needs browser-only APIs, so it runs after mount by design.
@@ -55,7 +55,7 @@ export function ProjectModel({ slug, accent }: { slug: string; accent: string })
             active={inView}
             onReady={() => setReady(true)}
             onSlow={() => {
-              sessionSlowFlag(true);
+              previewSlowFlag(true);
               setOn(false);
             }}
           />

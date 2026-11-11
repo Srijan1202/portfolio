@@ -1,11 +1,12 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, type RootState } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { getProject, type StationObject } from "@/content/projects";
 import { useSite } from "@/lib/store";
 import { STATIONS } from "./stations";
+import { usePauseWhenHidden, useFrameGuard } from "./guard";
 
 /** Camera distance per object, sized so the whole station fits a square frame. */
 const DIST: Record<StationObject, number> = { phone: 4.0, "raspberry-pi": 4.8, esp32: 4.6, "l1-l2-stack": 6.3 };
@@ -22,27 +23,8 @@ function Sway({ target, d }: { target: THREE.Vector3; d: number }) {
   return null;
 }
 
-/** Same rule as the home scene's frame guard: over 70 ms a frame on average and the model turns off. */
 function Guard({ onSlow }: { onSlow: () => void }) {
-  const r = useRef({ frames: 0, last: 0, total: 0, samples: 0, done: false });
-  useFrame(() => {
-    const s = r.current;
-    const now = performance.now();
-    s.frames++;
-    if (!s.done && s.frames > 8 && s.last) {
-      s.total += now - s.last;
-      s.samples++;
-      if (s.samples >= 45 || (s.samples >= 3 && s.total > 2500)) {
-        if (s.total / s.samples > 70) {
-          s.done = true;
-          onSlow();
-        }
-        s.total = 0;
-        s.samples = 0;
-      }
-    }
-    s.last = now;
-  });
+  useFrameGuard(onSlow);
   return null;
 }
 
@@ -59,6 +41,9 @@ export default function StationPreview({
   onSlow: () => void;
 }) {
   const project = getProject(slug);
+  // Pause while scrolled away, and while Next keeps the page hidden after navigation.
+  const r3f = useRef<RootState | null>(null);
+  usePauseWhenHidden(r3f, active ? "always" : "never");
   const target = useMemo(() => new THREE.Vector3(...(project?.station.cameraTarget ?? [0, 0, 0])), [project]);
   if (!project) return null;
   const Station = STATIONS[project.station.object];
@@ -71,7 +56,9 @@ export default function StationPreview({
       camera={{ fov: 36, near: 0.1, far: 40, position: [x, 2, 5] }}
       gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
       style={{ pointerEvents: "none" }}
-      onCreated={({ gl }) => {
+      onCreated={(state) => {
+        const { gl } = state;
+        r3f.current = state;
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.1;
         requestAnimationFrame(onReady);

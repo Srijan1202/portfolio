@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, type RootState } from "@react-three/fiber";
 import { AdaptiveDpr } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { play } from "@/lib/sound";
 import { CameraRail } from "./CameraRail";
 import { ContactTerminal, DeskSurface, HeroText, Lamp, StationLabel } from "./Desk";
 import { STATIONS } from "./stations";
+import { usePauseWhenHidden, useFrameGuard } from "./guard";
 import { PhotoTaker, StickyNotes, daylightNow } from "./Extras";
 
 /**
@@ -19,29 +20,11 @@ import { PhotoTaker, StickyNotes, daylightNow } from "./Extras";
  * slow on "low" → turn the scene off; the HTML page is unaffected.
  */
 function FrameGuard() {
-  const ref = useRef({ frames: 0, last: 0, total: 0, samples: 0 });
-  useFrame(() => {
-    const r = ref.current;
-    const now = performance.now();
-    r.frames++;
-    // Skip the first frames (shader compilation), then judge a window that
-    // ends after 45 frames or 2.5 s, whichever comes first.
-    if (r.frames > 8 && r.last) {
-      r.total += now - r.last;
-      r.samples++;
-      if (r.samples >= 45 || (r.samples >= 3 && r.total > 2500)) {
-        const avg = r.total / r.samples;
-        const { quality, set } = useSite.getState();
-        if (avg > 70) {
-          // Hopeless (e.g. software rendering): skip the low-quality retry.
-          if (quality === "high" && avg < 400) set({ quality: "low" });
-          else set({ sceneTooSlow: true });
-        }
-        r.total = 0;
-        r.samples = 0;
-      }
-    }
-    r.last = now;
+  useFrameGuard((avg) => {
+    const { quality, set } = useSite.getState();
+    // Hopeless (e.g. software rendering): skip the low-quality retry.
+    if (quality === "high" && avg < 200) set({ quality: "low" });
+    else set({ sceneTooSlow: true });
   });
   return null;
 }
@@ -97,6 +80,9 @@ export default function Workbench() {
   }, [stop]);
   const set = useSite((s) => s.set);
   const [visible, setVisible] = useState(false);
+  // Stop rendering while Next keeps this page hidden after navigating away.
+  const r3f = useRef<RootState | null>(null);
+  usePauseWhenHidden(r3f);
 
   useEffect(() => {
     set({ sceneActive: true });
@@ -120,6 +106,7 @@ export default function Workbench() {
         gl={{ antialias: quality === "high", powerPreference: "high-performance" }}
         onCreated={(state) => {
           const { gl } = state;
+          r3f.current = state;
           // Opt-in perf inspection: open the page with ?debug3d.
           if (window.location.search.includes("debug3d")) (window as unknown as { __r3f: unknown }).__r3f = state;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
