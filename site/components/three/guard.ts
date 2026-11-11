@@ -62,6 +62,8 @@ export function useFrameGuard(onSlow: (avgMs: number) => void) {
 export function usePauseWhenHidden(state: React.RefObject<RootState | null>, frameloop: "always" | "never" = "always") {
   useLayoutEffect(() => {
     state.current?.setFrameloop(frameloop);
+    // Read the ref at hide time on purpose: the canvas may not exist yet when this effect first runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => state.current?.setFrameloop("never");
   }, [state, frameloop]);
 }
